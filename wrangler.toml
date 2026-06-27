@@ -9,5 +9,5 @@ routes = [
 
 [[rules]]
 type = "Text"
-globs = ["**/*.html"]
+globs = ["index.html", "app-css.txt", "app-client.txt"]
 fallthrough = true

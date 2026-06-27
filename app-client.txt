@@ -1,0 +1,321 @@
+const BASE = "__CLUB_LAMBDA_BASE__";
+const MONEY_KEY = "club-lambda-clone-state-v1";
+
+const mainGames = [
+  ["lobby", "◇", "Lobby"],
+  ["crash", "🚀", "Crash"],
+  ["dice", "🎲", "Dice"],
+  ["scratch", "🎟️", "Scratch Cards"],
+  ["uno", "🃏", "Uno"],
+  ["mines", "💎", "Mines"],
+  ["chicken", "🐔", "Chicken Cross"],
+  ["lucky-chicken", "🍀", "Lucky Chicken"],
+  ["blackjack", "🃏", "Blackjack"],
+  ["slots", "🎰", "Slots"],
+  ["cascade", "🧩", "Cascade"],
+  ["plinko", "🔵", "Plinko"],
+  ["roulette", "🎡", "Roulette"],
+  ["poker", "♠️", "Poker"],
+  ["pool", "🎱", "8-Ball Pool"]
+];
+const metaGames = [
+  ["markets", "📊", "Prediction Pools"],
+  ["leaderboard", "🏆", "Leaderboard"],
+  ["chill", "🍹", "Chill Zone"]
+];
+
+const state = loadState();
+let currentRoute = "lobby";
+
+function loadState() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(MONEY_KEY));
+    if (parsed && typeof parsed.balance === "number") return parsed;
+  } catch {}
+  return { balance: 1000, biggestWin: 0, played: 0, muted: false, name: "Lambda guest", ledger: [] };
+}
+function saveState() { localStorage.setItem(MONEY_KEY, JSON.stringify(state)); }
+const fmt = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
+const qs = (s, el = document) => el.querySelector(s);
+const qsa = (s, el = document) => [...el.querySelectorAll(s)];
+const rand = (min, max) => Math.random() * (max - min) + min;
+const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const pathFor = (id) => id === "lobby" ? `${BASE}/` : `${BASE}/${id}`;
+
+function init() {
+  renderNav();
+  document.body.classList.toggle("muted", state.muted);
+  qs(".hamburger").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
+  qs(".drawer-backdrop").addEventListener("click", () => document.body.classList.remove("drawer-open"));
+  qs(".js-sound").addEventListener("click", () => { state.muted = !state.muted; saveState(); document.body.classList.toggle("muted", state.muted); });
+  window.addEventListener("popstate", route);
+  document.addEventListener("click", interceptLinks);
+  route();
+}
+
+function interceptLinks(event) {
+  const link = event.target.closest("a[href]");
+  if (!link) return;
+  const href = link.getAttribute("href");
+  if (!href.startsWith(BASE)) return;
+  event.preventDefault();
+  history.pushState(null, "", href);
+  document.body.classList.remove("drawer-open");
+  route();
+}
+
+function route() {
+  const part = location.pathname.slice(BASE.length).replace(/^\/+/, "").split("/")[0] || "lobby";
+  currentRoute = [...mainGames, ...metaGames].some(([id]) => id === part) ? part : "lobby";
+  renderNav();
+  renderBalance();
+  if (currentRoute === "lobby") renderLobby();
+  else if (currentRoute === "leaderboard") renderLeaderboard();
+  else if (currentRoute === "markets") renderMarkets();
+  else if (currentRoute === "chill") renderChill();
+  else renderGame(currentRoute);
+}
+
+function renderNav() {
+  const navHtml = (items) => items.map(([id, icon, label]) => `
+    <a class="nav-link ${id === currentRoute ? "active" : ""}" href="${pathFor(id)}">
+      <span class="icon">${icon}</span><span class="label">${label}</span>
+    </a>
+  `).join("");
+  qs(".js-nav").innerHTML = navHtml(mainGames);
+  qs(".js-meta-nav").innerHTML = navHtml(metaGames);
+  qs(".js-drawer-nav").innerHTML = navHtml([...mainGames, ...metaGames]);
+}
+
+function renderBalance() {
+  qsa(".js-balance").forEach((el) => el.textContent = fmt(state.balance));
+}
+
+function renderLobby() {
+  qs("#view").innerHTML = `
+    <section class="hero">
+      <span class="eyebrow">Lambda keeps the floor open</span>
+      <h1>Welcome to <span class="text-neon">club Λ</span></h1>
+      <p>One virtual bankroll, zero real money. Lambda manages the tables, records your session, and follows you from game to game.</p>
+      <div class="stats">
+        ${stat("Bankroll", fmt(state.balance), "text-gold")}
+        ${stat("Biggest win", fmt(state.biggestWin))}
+        ${stat("Hands played", fmt(state.played))}
+      </div>
+      <section class="promo glass">
+        <p class="eyebrow">Promo code</p>
+        <div class="promo-row">
+          <input class="input js-promo" placeholder="Enter a code..." maxlength="32">
+          <button class="gold-button js-redeem" type="button">Redeem</button>
+        </div>
+        <p class="notice js-promo-result"></p>
+      </section>
+    </section>
+    <section class="section-grid">
+      ${card("crash", "🚀", "Crash", "Cash out before Lambda's signal explodes.", "12.4x", "#2fd0bb", "wide")}
+      ${card("dice", "🎲", "Dice", "Roll under or over the target.", "50.00", "#4aa8ff", "wide")}
+      ${card("scratch", "🎟️", "Scratch Cards", "Reveal nine symbols and find a match.", "scratch", "#e8b73a", "wide")}
+      ${card("uno", "🃏", "Uno", "Match color or number versus the table.", "cards", "#ff5470", "wide")}
+      ${card("mines", "💎", "Mines", "Find the gems, dodge the mines.", "mines", "#f0c64a", "wide")}
+      ${card("chicken", "🐔", "Chicken Cross", "Dodge traffic in real time.", "traffic", "#b6f23f", "wide")}
+      ${card("lucky-chicken", "🍀", "Lucky Chicken", "Press your luck one lane at a time.", "🍀🐔", "#36c98c", "wide")}
+      ${card("blackjack", "🃏", "Blackjack", "Hit, stand, double. Reach 21.", "blackjack", "#3f9d6d", "small")}
+      ${card("slots", "🎰", "Slots", "Spin three reels for a jackpot.", "slots", "#c9a44c", "wide")}
+      ${card("cascade", "🧩", "Cascade", "Clear symbols and chain payouts.", "grid", "#8b72ff", "small")}
+      ${card("plinko", "🔵", "Plinko", "Drop the ball, chase multipliers.", "plinko", "#3a6ea5", "small")}
+      ${card("roulette", "🎡", "Roulette", "Red, black, or your lucky number.", "wheel", "#b3354a", "small")}
+      ${card("poker", "♠️", "Video Poker", "Jacks or better. Hold and draw.", "poker", "#7a5cc0", "small")}
+      ${card("pool", "🎱", "8-Ball Pool", "Line up the shot and clear the table.", "pool", "#2fd0bb", "small")}
+      ${card("markets", "📊", "Prediction Pools", "Back Yes or No on Lambda markets.", "market", "#3f9d6d", "full")}
+    </section>`;
+  qs(".js-redeem").addEventListener("click", () => redeem());
+}
+
+function stat(label, value, klass = "") {
+  return `<div class="stat glass"><small>${label}</small><strong class="${klass} nums">${value}</strong></div>`;
+}
+
+function card(id, icon, title, desc, type, color, size) {
+  return `<a class="game-card glass ${size === "wide" ? "" : size}" href="${pathFor(id)}">
+    <div class="inner">
+      <span class="glow" style="background:${color}"></span>
+      <div class="visual">${visual(type, icon)}</div>
+      <h2>${title}</h2><p>${desc}</p><span class="arrow">↗</span>
+    </div>
+  </a>`;
+}
+
+function visual(type, icon) {
+  if (type === "slots") return `<div class="reels"><span class="reel">Λ</span><span class="reel">★</span><span class="reel">7</span></div>`;
+  if (type === "blackjack") return `<div class="cards"><span class="card red">A♥</span><span class="card">K♠</span></div>`;
+  if (type === "poker") return `<div class="cards"><span class="card">10</span><span class="card red">J</span><span class="card">Q</span></div>`;
+  if (type === "cards") return `<div class="cards"><span class="card red">5</span><span class="card">Λ</span><span class="card red">⇄</span></div>`;
+  if (type === "mines" || type === "grid") return `<div class="grid-mini">${["💎","💎","×","◇","×","💎","Λ","◇","·"].map(x=>`<span>${x}</span>`).join("")}</div>`;
+  if (type === "traffic") return `<div class="traffic" style="font-size:2.5rem"><span>🐔</span><span style="font-size:1.6rem">🚗</span><span style="font-size:1.6rem">🚙</span></div>`;
+  if (type === "market") return `<div class="market-bar"><div style="display:flex;justify-content:space-between;color:var(--muted);font-weight:800"><span style="color:var(--emerald)">Yes 62%</span><span style="color:var(--crimson)">38% No</span></div><div class="bar-line"><span class="yes" style="width:62%"></span><span class="no" style="width:38%"></span></div></div>`;
+  if (type === "plinko") return `<svg width="120" height="90" viewBox="0 0 120 90"><g fill="rgba(255,255,255,.55)">${Array.from({length:24},(_,i)=>`<circle cx="${20+(i%6)*16+(Math.floor(i/6)%2)*8}" cy="${16+Math.floor(i/6)*17}" r="2.8"/>`).join("")}</g><circle cx="60" cy="7" r="6" fill="var(--gold)"/></svg>`;
+  if (type === "wheel") return `<svg width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="40" fill="none" stroke="var(--gold)" stroke-width="4"/><g stroke-width="4">${Array.from({length:16},(_,i)=>`<line x1="52" y1="14" x2="52" y2="4" stroke="${i%2?"var(--crimson)":"#eee"}" transform="rotate(${i*22.5} 52 52)"/>`).join("")}</g><circle cx="52" cy="52" r="8" fill="var(--gold)"/></svg>`;
+  if (type === "pool") return `<div style="font-size:4rem">🎱</div>`;
+  if (type === "scratch") return `<div class="grid-mini">${["Λ","★","Λ","7","◇","★","◇","Λ","7"].map(x=>`<span>${x}</span>`).join("")}</div>`;
+  return `<div style="display:flex;align-items:center;gap:.75rem"><span style="font-size:3.5rem">${icon}</span><strong class="text-neon nums" style="font-size:2rem">${type}</strong></div>`;
+}
+
+function redeem() {
+  const code = qs(".js-promo").value.trim().toUpperCase();
+  const out = qs(".js-promo-result");
+  if (code === "LAMBDA" || code === "CLUB") {
+    payout(250, "Promo");
+    out.textContent = "Lambda credited 250 virtual chips.";
+  } else {
+    out.textContent = code ? "Lambda rejected that code." : "Enter a promo code.";
+  }
+}
+
+function renderGame(id) {
+  const name = gameName(id);
+  qs("#view").innerHTML = `
+    <section class="page">
+      <header class="page-head">
+        <span class="eyebrow">${tagline(id)}</span>
+        <h1>${name}</h1>
+      </header>
+      <div class="game-layout">
+        <section class="felt game-stage">${stageFor(id)}</section>
+        <aside class="game-panel glass">
+          <div class="result js-result">${instructions(id)}</div>
+          ${controlsFor(id)}
+        </aside>
+      </div>
+    </section>`;
+  wireGame(id);
+}
+
+function gameName(id) {
+  return [...mainGames, ...metaGames].find(([key]) => key === id)?.[2] || "Game";
+}
+function tagline(id) {
+  return ({
+    crash: "Cash out before the rocket blows",
+    dice: "Provably fair · roll under or over",
+    scratch: "Reveal the hidden symbols",
+    uno: "Match color or number",
+    mines: "Find gems and dodge mines",
+    chicken: "Skill: dodge traffic in real time",
+    "lucky-chicken": "Luck: no dodging, just nerve",
+    blackjack: "Beat Lambda's dealer",
+    slots: "Three reels, one bankroll",
+    cascade: "Chain clears for multipliers",
+    plinko: "Drop the ball",
+    roulette: "Red, black, or number",
+    poker: "Jacks or better",
+    pool: "Pocket the 8 last"
+  })[id] || "Lambda table";
+}
+function instructions(id) {
+  return ({
+    crash: "Place a bet, launch the multiplier, then cash out before Lambda crashes it.",
+    dice: "Pick a chance. Roll under the target for the displayed payout.",
+    blackjack: "Deal a hand, then hit or stand before Lambda draws.",
+    poker: "Draw once. Pairs and better pay.",
+    mines: "Reveal safe squares. More safe reveals means a better multiplier.",
+    plinko: "Drop into a multiplier bucket.",
+    roulette: "Choose a simple outside bet.",
+    pool: "Take the shot and hope the table clears cleanly."
+  })[id] || "Place a bet and let Lambda resolve the round.";
+}
+function stageFor(id) {
+  if (id === "crash") return `<div><div class="multiplier text-neon js-stage">1.00x</div><svg width="420" height="150" viewBox="0 0 420 150"><path d="M15 130 C90 120 130 103 185 78 S292 25 405 16" fill="none" stroke="var(--neon)" stroke-width="6" stroke-linecap="round"/></svg></div>`;
+  if (id === "dice") return `<div><div class="multiplier text-neon js-stage">00.00</div><input class="range js-chance" type="range" min="1" max="98" value="50"><p class="notice">Win chance <span class="js-chance-label">50</span>% · payout <span class="js-payout">1.98x</span></p></div>`;
+  if (id === "roulette") return `<div>${visual("wheel","")}</div>`;
+  if (id === "slots") return visual("slots","");
+  if (id === "blackjack") return `<div class="cards js-stage">${visual("blackjack","")}</div>`;
+  if (id === "poker") return `<div>${visual("poker","")}</div>`;
+  if (id === "mines") return `<div class="grid-mini js-stage">${Array.from({length:25},(_,i)=>`<button class="mine-cell" data-i="${i}" style="width:2.4rem;height:2.4rem;border:0;border-radius:.45rem;background:rgba(255,255,255,.08);color:var(--ink)">?</button>`).join("")}</div>`;
+  if (id === "plinko") return visual("plinko","");
+  if (id === "chicken") return visual("traffic","");
+  if (id === "lucky-chicken") return `<div style="font-size:4rem">🍀 🐔</div>`;
+  if (id === "scratch") return `<div class="grid-mini js-scratch">${Array.from({length:9},()=>`<button style="width:2.8rem;height:2.8rem;border:0;border-radius:.45rem;background:rgba(255,255,255,.08);color:var(--ink)">?</button>`).join("")}</div>`;
+  if (id === "cascade") return visual("grid","");
+  if (id === "pool") return visual("pool","");
+  if (id === "uno") return visual("cards","");
+  return `<div style="font-size:4rem">Λ</div>`;
+}
+function controlsFor(id) {
+  const extras = id === "roulette" ? `<div class="segment js-choice"><button class="active" data-choice="red">Red</button><button data-choice="black">Black</button><button data-choice="green">Green</button></div>` :
+    id === "dice" ? `<div class="segment js-choice"><button class="active" data-choice="under">Roll under</button><button data-choice="over">Roll over</button></div>` :
+    id === "crash" ? `<div class="segment js-choice"><button class="active" data-choice="off">Auto off</button><button data-choice="1.5">1.5x</button><button data-choice="2">2x</button><button data-choice="5">5x</button></div>` : "";
+  return `${extras}
+    <div style="height:.75rem"></div>
+    <div class="bet-box"><span class="text-gold">Λ</span><input class="js-bet" inputmode="numeric" value="50"><div class="quick"><button data-q="half">½</button><button data-q="double">2×</button><button data-q="max">Max</button></div></div>
+    <div class="balance-line"><span class="js-error"></span><span>Balance <strong class="nums js-balance">${fmt(state.balance)}</strong></span></div>
+    <div class="chips"><button class="chip" data-chip="5">5</button><button class="chip" data-chip="25">25</button><button class="chip" data-chip="100">100</button><button class="chip" data-chip="500">500</button></div>
+    <button class="primary-button js-play" type="button">${id === "crash" ? "Place bet" : "Bet"}</button>`;
+}
+
+function wireGame(id) {
+  qsa("[data-chip]").forEach((b) => b.addEventListener("click", () => qs(".js-bet").value = b.dataset.chip));
+  qsa("[data-q]").forEach((b) => b.addEventListener("click", () => {
+    const input = qs(".js-bet");
+    const value = Math.max(1, Number(input.value) || 1);
+    input.value = b.dataset.q === "half" ? Math.max(1, Math.floor(value / 2)) : b.dataset.q === "double" ? Math.min(state.balance, value * 2) : state.balance;
+  }));
+  qsa(".js-choice button").forEach((b) => b.addEventListener("click", () => { qsa(".js-choice button").forEach(x => x.classList.remove("active")); b.classList.add("active"); }));
+  const chance = qs(".js-chance");
+  if (chance) chance.addEventListener("input", () => {
+    qs(".js-chance-label").textContent = chance.value;
+    qs(".js-payout").textContent = (99 / Number(chance.value)).toFixed(2) + "x";
+  });
+  qs(".js-play").addEventListener("click", () => play(id));
+}
+
+function play(id) {
+  const bet = Math.max(1, Math.floor(Number(qs(".js-bet").value) || 1));
+  if (bet > state.balance) return qs(".js-error").textContent = "Not enough balance";
+  let winRate = 0.42, mult = rand(1.4, 3.2), stage = "";
+  if (id === "dice") { winRate = Number(qs(".js-chance").value) / 100; mult = 99 / Number(qs(".js-chance").value); stage = rand(0, 99.99).toFixed(2); qs(".js-stage").textContent = stage; }
+  if (id === "crash") { mult = rand(1.02, 8); winRate = .48; qs(".js-stage").textContent = mult.toFixed(2) + "x"; }
+  if (id === "slots") { const s = ["Λ","7","★","◇","🍒"]; const r=[pick(s),pick(s),pick(s)]; qsa(".reel").forEach((el,i)=>el.textContent=r[i]); winRate = new Set(r).size < 3 ? .8 : .12; mult = new Set(r).size === 1 ? 8 : 2; }
+  if (id === "roulette") { const choice = qs(".js-choice .active")?.dataset.choice || "red"; winRate = choice === "green" ? .08 : .47; mult = choice === "green" ? 14 : 2; }
+  if (id === "blackjack") { winRate = .47; mult = 2; }
+  if (id === "poker") { winRate = .36; mult = pick([1.5, 2, 3, 5, 9]); }
+  if (id === "mines") { winRate = .52; mult = rand(1.3, 4.5); }
+  if (id === "plinko") { mult = pick([0, .5, 1.2, 1.8, 3, 5, 9]); winRate = mult > 1; }
+  if (id === "scratch") { winRate = .38; mult = pick([1.5, 2, 5, 10]); qsa(".js-scratch button").forEach(b=>b.textContent=pick(["Λ","7","★","◇"])); }
+  if (id === "chicken") { winRate = .45; mult = rand(1.5, 3.8); }
+  if (id === "lucky-chicken") { winRate = .5; mult = rand(1.25, 3.4); }
+  if (id === "cascade") { winRate = .44; mult = rand(1.5, 6); }
+  if (id === "pool") { winRate = .46; mult = rand(1.4, 2.8); }
+  if (id === "uno") { winRate = .48; mult = rand(1.2, 2.5); }
+  const won = typeof winRate === "boolean" ? winRate : Math.random() < winRate;
+  const delta = won ? Math.round(bet * mult) - bet : -bet;
+  state.balance = Math.max(0, state.balance + delta);
+  state.played += 1;
+  if (delta > state.biggestWin) state.biggestWin = delta;
+  state.ledger.unshift({ game: gameName(id), delta, at: new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) });
+  state.ledger = state.ledger.slice(0, 30);
+  saveState();
+  renderBalance();
+  qs(".js-result").innerHTML = won ? `<span class="text-neon">Won ${fmt(delta)} ΛC</span>` : `<span style="color:var(--crimson)">Lost ${fmt(bet)} ΛC</span>`;
+}
+
+function payout(amount, game) {
+  state.balance += amount; state.biggestWin = Math.max(state.biggestWin, amount);
+  state.ledger.unshift({ game, delta: amount, at: new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) });
+  saveState(); renderBalance();
+}
+
+function renderLeaderboard() {
+  const rows = [
+    ["Lambda", 21420], ["Viraj", Math.max(state.balance, 1000)], ["Market Maker", 9880], ["Signal Surfer", 7540], ["Glass Whale", 6900]
+  ].sort((a,b)=>b[1]-a[1]);
+  qs("#view").innerHTML = `<section class="page"><header class="page-head"><span class="eyebrow">The biggest bankrolls in club Λ</span><h1>Leaderboard</h1></header><div class="glass" style="border-radius:1rem;overflow:hidden"><table class="table"><thead><tr><th>Rank</th><th>Name</th><th>Balance</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>#${i+1}</td><td>${r[0]}</td><td class="text-gold nums">${fmt(r[1])}</td></tr>`).join("")}</tbody></table></div><p class="notice">Local fake leaderboard, saved in this browser.</p></section>`;
+}
+function renderMarkets() {
+  const markets = [["Will Lambda run a house promo today?",62],["Will Crash hit 10x before midnight?",31],["Will the pool table clear in one shot?",48]];
+  qs("#view").innerHTML = `<section class="page"><header class="page-head"><span class="eyebrow">Community prediction pools</span><h1>Prediction Pools</h1></header><div class="section-grid" style="margin-top:0">${markets.map(([q,p])=>`<article class="game-card glass full"><div class="inner"><h2>${q}</h2>${visual("market","").replace("62",p).replace("38",100-p).replace("width:62%","width:"+p+"%").replace("width:38%","width:"+(100-p)+"%")}<button class="primary-button" type="button">Back Yes</button></div></article>`).join("")}</div></section>`;
+}
+function renderChill() {
+  qs("#view").innerHTML = `<section class="page"><header class="page-head"><span class="eyebrow">No wagers, just ambience</span><h1>Chill Zone</h1><p>Lambda dims the lights, loops soft table sounds, and lets your fake bankroll rest.</p></header><div class="felt game-stage"><div class="multiplier text-neon">Λ</div><p class="notice">Floor status: calm · comps active · no real money anywhere.</p></div></section>`;
+}
+
+init();
