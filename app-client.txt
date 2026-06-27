@@ -2,6 +2,15 @@ const BASE = "__CLUB_LAMBDA_BASE__";
 const MONEY_KEY = "club-lambda-clone-state-v1";
 const BONUS_INTERVAL = 60 * 60 * 1000;
 const RADIO_PLAYLIST = "PLpiuAoPPBEf_GfakIh6PK9XwLy7SjmZxl";
+const HF = {
+  readWallet: "5b85cd626f95bb19df360875646671b440977767870a7a04a73cbabd2f9bd88a",
+  recordBet: "38d361b90b8956a2ccaa2ff67d8112a8228e4edcb4810f3af3bd5e7252b84aa8",
+  claimBonus: "f1bec105ab4f7dd3e86ffab5bd053cf787814b210a53a75db2c22dca5543a5e6",
+  setName: "2fb8770049d20b258819d7787f1f7a4dc8e336b6af380282586a8c499dd00c30",
+  signOut: "bca3390e1b2e08f639fab93a608349a336a4c6aad2081d77c9b3e7a1e458c4c5",
+  linkShoo: "dbd460458231de82d1c15953eb2cf4741a599f0a8b63afe852bf386e813a137d",
+  redeemPromo: "910b226994a1f0e6e208ce010335be96c3fba3320c4f3357c12faf2d0dd2a94e"
+};
 
 const mainGames = [
   ["lobby", "◇", "Lobby"],
@@ -32,9 +41,23 @@ let currentRoute = "lobby";
 function loadState() {
   try {
     const parsed = JSON.parse(localStorage.getItem(MONEY_KEY));
-    if (parsed && typeof parsed.balance === "number") return parsed;
+    if (parsed && typeof parsed === "object") {
+      return {
+        balance: Number(parsed.balance) || 1000,
+        biggestWin: Number(parsed.biggestWin) || 0,
+        played: Number(parsed.played) || 0,
+        muted: !!parsed.muted,
+        name: parsed.name || "Lambda guest",
+        lastBonus: Number(parsed.lastBonus) || 0,
+        linkedUserId: parsed.linkedUserId || null,
+        radioOpen: !!parsed.radioOpen,
+        radioEdit: !!parsed.radioEdit,
+        playlist: parsed.playlist || RADIO_PLAYLIST,
+        ledger: Array.isArray(parsed.ledger) ? parsed.ledger : []
+      };
+    }
   } catch {}
-  return { balance: 1000, biggestWin: 0, played: 0, muted: false, name: "Lambda guest", lastBonus: 0, radioOpen: false, radioEdit: false, playlist: RADIO_PLAYLIST, ledger: [] };
+  return { balance: 1000, biggestWin: 0, played: 0, muted: false, name: "Lambda guest", lastBonus: 0, linkedUserId: null, radioOpen: false, radioEdit: false, playlist: RADIO_PLAYLIST, ledger: [] };
 }
 function saveState() { localStorage.setItem(MONEY_KEY, JSON.stringify(state)); }
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
@@ -43,6 +66,56 @@ const qsa = (s, el = document) => [...el.querySelectorAll(s)];
 const rand = (min, max) => Math.random() * (max - min) + min;
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const pathFor = (id) => id === "lobby" ? `${BASE}/` : `${BASE}/${id}`;
+
+async function callServer(name, body) {
+  const method = body === undefined ? "GET" : "POST";
+  const formBody = body === undefined ? undefined : `data=${encodeURIComponent(JSON.stringify(body))}`;
+  const response = await fetch(`${BASE}/_serverFn/${HF[name]}`, {
+    method,
+    credentials: "include",
+    headers: {
+      Accept: "application/json",
+      ...(formBody ? { "content-type": "application/x-www-form-urlencoded" } : {})
+    },
+    body: formBody
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const envelope = await response.json();
+  return envelope.result;
+}
+
+function applyWallet(wallet) {
+  if (!wallet || !wallet.uid) return;
+  state.balance = Number(wallet.balance || 0);
+  state.biggestWin = Number(wallet.biggestWin || 0);
+  state.played = Number(wallet.handsPlayed || 0);
+  state.lastBonus = Number(wallet.lastTopUp || 0);
+  state.name = wallet.name || "Lambda guest";
+  state.linkedUserId = wallet.linkedUserId || null;
+  saveState();
+  renderBalance();
+  renderSignIn();
+}
+
+async function syncWallet() {
+  applyWallet(await callServer("readWallet"));
+}
+
+function renderSignIn() {
+  const button = qs(".sign-in");
+  if (!button) return;
+  button.textContent = state.linkedUserId ? `✓ ${state.linkedUserId.slice(0, 10)}` : "Sign in";
+  button.title = state.linkedUserId ? "Signed in with Shoo" : "Sign in";
+}
+
+function signIn() {
+  if (state.linkedUserId) {
+    toast(`Signed in as ${state.linkedUserId}.`);
+    return;
+  }
+  const redirect = `${location.origin}${BASE}/shoo/callback`;
+  location.href = `https://shoo.dev/authorize?redirect_uri=${encodeURIComponent(redirect)}`;
+}
 
 function init() {
   renderNav();
@@ -60,7 +133,7 @@ function init() {
   qs(".js-name").addEventListener("keydown", (event) => {
     if (event.key === "Enter") saveDisplayName();
   });
-  qs(".sign-in").addEventListener("click", () => toast("Lambda sign-in is decorative for now."));
+  qs(".sign-in").addEventListener("click", signIn);
   document.addEventListener("click", (event) => {
     if (!event.target.closest(".balance-menu") && !event.target.closest(".balance-pill")) {
       document.body.classList.remove("balance-menu-open");
@@ -71,6 +144,7 @@ function init() {
   setInterval(renderBalanceMenu, 1000);
   renderRadio();
   route();
+  syncWallet().then(() => route()).catch(() => toast("Could not reach the bankroll server."));
 }
 
 function interceptLinks(event) {
@@ -86,6 +160,11 @@ function interceptLinks(event) {
 
 function route() {
   const part = location.pathname.slice(BASE.length).replace(/^\/+/, "").split("/")[0] || "lobby";
+  if (part === "shoo") {
+    currentRoute = "shoo";
+    renderShooCallback();
+    return;
+  }
   currentRoute = [...mainGames, ...metaGames].some(([id]) => id === part) ? part : "lobby";
   renderNav();
   renderBalance();
@@ -109,6 +188,7 @@ function renderNav() {
 
 function renderBalance() {
   qsa(".js-balance").forEach((el) => el.textContent = fmt(state.balance));
+  renderSignIn();
   renderBalanceMenu();
 }
 
@@ -126,20 +206,31 @@ function renderBalanceMenu() {
   }
 }
 
-function claimBonus() {
+async function claimBonus() {
   const remaining = Math.max(0, BONUS_INTERVAL - (Date.now() - (state.lastBonus || 0)));
   if (remaining > 0) return;
-  state.lastBonus = Date.now();
-  payout(200, "Hourly bonus");
-  toast("Lambda credited 200 virtual chips.");
-  document.body.classList.remove("balance-menu-open");
+  try {
+    const wallet = await callServer("claimBonus", {});
+    applyWallet(wallet);
+    if (wallet.claimed === false) toast("Bonus is still cooling down.");
+    else {
+      addLedger("Hourly bonus", 200);
+      toast("Lambda credited 200 virtual chips.");
+    }
+    document.body.classList.remove("balance-menu-open");
+  } catch {
+    toast("Could not claim the bonus.");
+  }
 }
 
-function saveDisplayName() {
+async function saveDisplayName() {
   const value = qs(".js-name").value.trim();
-  state.name = value || "Lambda guest";
-  saveState();
-  toast(value ? `Display name saved as ${value}.` : "Display name cleared.");
+  try {
+    applyWallet(await callServer("setName", { name: value }));
+    toast(value ? `Display name saved as ${value}.` : "Display name cleared.");
+  } catch {
+    toast("Could not save that name.");
+  }
 }
 
 function formatDuration(ms) {
@@ -279,14 +370,31 @@ function visual(type, icon) {
   return `<div style="display:flex;align-items:center;gap:.75rem"><span style="font-size:3.5rem">${icon}</span><strong class="text-neon nums" style="font-size:2rem">${type}</strong></div>`;
 }
 
-function redeem() {
+async function redeem() {
   const code = qs(".js-promo").value.trim().toUpperCase();
   const out = qs(".js-promo-result");
-  if (code === "LAMBDA" || code === "CLUB") {
-    payout(250, "Promo");
-    out.textContent = "Lambda credited 250 virtual chips.";
-  } else {
-    out.textContent = code ? "Lambda rejected that code." : "Enter a promo code.";
+  const button = qs(".js-redeem");
+  if (!code) {
+    out.textContent = "Enter a promo code.";
+    return;
+  }
+  button.disabled = true;
+  try {
+    const result = await callServer("redeemPromo", { code });
+    if (result.ok) {
+      state.balance = Number(result.balance || state.balance);
+      addLedger("Promo", Number(result.reward || 0));
+      saveState();
+      renderBalance();
+      out.textContent = result.blurb || "Lambda credited your promo.";
+      qs(".js-promo").value = "";
+    } else {
+      out.textContent = result.reason === "already_claimed" ? "That code was already claimed." : "Lambda rejected that code.";
+    }
+  } catch {
+    out.textContent = "Promo server is unreachable.";
+  } finally {
+    button.disabled = false;
   }
 }
 
@@ -387,9 +495,12 @@ function wireGame(id) {
   qs(".js-play").addEventListener("click", () => play(id));
 }
 
-function play(id) {
+async function play(id) {
+  const playButton = qs(".js-play");
   const bet = Math.max(1, Math.floor(Number(qs(".js-bet").value) || 1));
   if (bet > state.balance) return qs(".js-error").textContent = "Not enough balance";
+  qs(".js-error").textContent = "";
+  playButton.disabled = true;
   let winRate = 0.42, mult = rand(1.4, 3.2), stage = "";
   if (id === "dice") { winRate = Number(qs(".js-chance").value) / 100; mult = 99 / Number(qs(".js-chance").value); stage = rand(0, 99.99).toFixed(2); qs(".js-stage").textContent = stage; }
   if (id === "crash") { mult = rand(1.02, 8); winRate = .48; qs(".js-stage").textContent = mult.toFixed(2) + "x"; }
@@ -406,28 +517,87 @@ function play(id) {
   if (id === "pool") { winRate = .46; mult = rand(1.4, 2.8); }
   if (id === "uno") { winRate = .48; mult = rand(1.2, 2.5); }
   const won = typeof winRate === "boolean" ? winRate : Math.random() < winRate;
-  const delta = won ? Math.round(bet * mult) - bet : -bet;
-  state.balance = Math.max(0, state.balance + delta);
-  state.played += 1;
-  if (delta > state.biggestWin) state.biggestWin = delta;
-  state.ledger.unshift({ game: gameName(id), delta, at: new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) });
-  state.ledger = state.ledger.slice(0, 30);
-  saveState();
-  renderBalance();
-  qs(".js-result").innerHTML = won ? `<span class="text-neon">Won ${fmt(delta)} ΛC</span>` : `<span style="color:var(--crimson)">Lost ${fmt(bet)} ΛC</span>`;
+  const win = won ? Math.round(bet * mult) : 0;
+  const delta = win - bet;
+  try {
+    const wallet = await callServer("recordBet", { bet: String(bet), win: String(win) });
+    if (wallet && wallet.ok === false) {
+      qs(".js-error").textContent = wallet.reason === "insufficient_balance" ? "Not enough balance" : "Bet rejected";
+      return;
+    }
+    applyWallet(wallet);
+    addLedger(gameName(id), delta);
+    qs(".js-result").innerHTML = won ? `<span class="text-neon">Won ${fmt(delta)} ΛC</span>` : `<span style="color:var(--crimson)">Lost ${fmt(bet)} ΛC</span>`;
+  } catch {
+    qs(".js-error").textContent = "Could not record bet";
+  } finally {
+    playButton.disabled = false;
+  }
 }
 
 function payout(amount, game) {
   state.balance += amount; state.biggestWin = Math.max(state.biggestWin, amount);
-  state.ledger.unshift({ game, delta: amount, at: new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) });
+  addLedger(game, amount);
   saveState(); renderBalance();
 }
 
+function addLedger(game, delta) {
+  state.ledger.unshift({ game, delta, at: new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"}) });
+  state.ledger = state.ledger.slice(0, 30);
+}
+
 function renderLeaderboard() {
-  const rows = [
-    ["Lambda", 21420], ["Viraj", Math.max(state.balance, 1000)], ["Market Maker", 9880], ["Signal Surfer", 7540], ["Glass Whale", 6900]
-  ].sort((a,b)=>b[1]-a[1]);
-  qs("#view").innerHTML = `<section class="page"><header class="page-head"><span class="eyebrow">The biggest bankrolls in club Λ</span><h1>Leaderboard</h1></header><div class="glass" style="border-radius:1rem;overflow:hidden"><table class="table"><thead><tr><th>Rank</th><th>Name</th><th>Balance</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>#${i+1}</td><td>${r[0]}</td><td class="text-gold nums">${fmt(r[1])}</td></tr>`).join("")}</tbody></table></div><p class="notice">Local fake leaderboard, saved in this browser.</p></section>`;
+  qs("#view").innerHTML = `<section class="page"><header class="page-head"><span class="eyebrow">The biggest bankrolls in club Λ</span><h1>Leaderboard</h1></header><div class="glass" style="border-radius:1rem;overflow:hidden"><table class="table"><thead><tr><th>Rank</th><th>Name</th><th>Balance</th></tr></thead><tbody class="js-leaderboard"><tr><td colspan="3">Loading...</td></tr></tbody></table></div><p class="notice">Backed by the Supabase wallet table.</p></section>`;
+  fetch(`${BASE}/api/leaderboard`, { credentials: "include" })
+    .then((response) => response.json())
+    .then(({ rows }) => {
+      const body = qs(".js-leaderboard");
+      if (!rows || !rows.length) {
+        body.innerHTML = `<tr><td colspan="3">No wallets yet.</td></tr>`;
+        return;
+      }
+      body.innerHTML = rows.map((r, i) => `<tr class="${r.you ? "you" : ""}"><td>#${i + 1}</td><td>${escapeHtml(r.name || "Lambda guest")}</td><td class="text-gold nums">${fmt(Number(r.balance || 0))}</td></tr>`).join("");
+    })
+    .catch(() => {
+      qs(".js-leaderboard").innerHTML = `<tr><td colspan="3">Could not load leaderboard.</td></tr>`;
+    });
+}
+
+function renderShooCallback() {
+  renderNav();
+  qs("#view").innerHTML = `<section class="page"><header class="page-head"><span class="eyebrow">Account link</span><h1>Linking Shoo...</h1><p class="notice js-link-status">Lambda is connecting your wallet.</p></header></section>`;
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token") || "";
+  const userId = params.get("userId") || params.get("user") || "";
+  const scopes = params.get("scopes") || "";
+  if (!token || !userId) {
+    qs(".js-link-status").textContent = "Shoo did not send a token. Try signing in again.";
+    return;
+  }
+  callServer("linkShoo", { token, userId, scopes })
+    .then((result) => {
+      if (!result.linked) {
+        qs(".js-link-status").textContent = "Could not link that Shoo account.";
+        return;
+      }
+      applyWallet(result.account);
+      history.replaceState(null, "", `${BASE}/`);
+      route();
+      toast("Shoo account linked.");
+    })
+    .catch(() => {
+      qs(".js-link-status").textContent = "Could not reach the account server.";
+    });
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
 }
 function renderMarkets() {
   const markets = [["Will Lambda run a house promo today?",62],["Will Crash hit 10x before midnight?",31],["Will the pool table clear in one shot?",48]];
