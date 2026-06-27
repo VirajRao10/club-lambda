@@ -1,0 +1,13 @@
+name = "club-lambda"
+main = "worker.js"
+compatibility_date = "2026-06-27"
+
+routes = [
+  { pattern = "virajrao.com/gamble*", zone_name = "virajrao.com" },
+  { pattern = "virajrao.com/clublambda*", zone_name = "virajrao.com" }
+]
+
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true

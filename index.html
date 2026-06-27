@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>club Λ</title>
+  <meta name="description" content="club Λ is a fictional-credit casino floor actively managed by Lambda. No deposits, no cashouts, no real-money gambling.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#090a0f">
+  <meta property="og:title" content="club Λ">
+  <meta property="og:description" content="A fake online casino where Lambda manages the house. Fictional credits only.">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090a0f;
+      --panel: #11131d;
+      --panel-2: #171a26;
+      --ink: #f4f1e8;
+      --muted: #a7a3b4;
+      --line: rgba(255, 255, 255, 0.12);
+      --lambda: #8ee6d8;
+      --gold: #f1c75b;
+      --rose: #f26d88;
+      --blue: #71a7ff;
+      --green: #7ee787;
+      --shadow: rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 8%, rgba(142, 230, 216, 0.22), transparent 30rem),
+        radial-gradient(circle at 82% 0%, rgba(242, 109, 136, 0.17), transparent 26rem),
+        linear-gradient(180deg, #090a0f 0%, #0c0d14 45%, #07080c 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 18rem minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .rail {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 1rem;
+      border-right: 1px solid var(--line);
+      background: rgba(9, 10, 15, 0.76);
+      backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-height: 3.5rem;
+      padding: 0.75rem;
+      border: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      border-radius: 0.5rem;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 0.45rem;
+      background: #0e2727;
+      color: var(--lambda);
+      font-size: 1.55rem;
+      font-weight: 800;
+      box-shadow: inset 0 0 0 1px rgba(142, 230, 216, 0.34);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 1.1rem;
+      letter-spacing: 0;
+    }
+
+    .brand span:last-child {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .balance-card,
+    .lambda-card,
+    .panel,
+    .game-card,
+    .ticker,
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(17, 19, 29, 0.82);
+      box-shadow: 0 1.5rem 4rem var(--shadow);
+      backdrop-filter: blur(18px);
+      border-radius: 0.5rem;
+    }
+
+    .balance-card {
+      padding: 1rem;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.35rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .balance {
+      display: flex;
+      align-items: baseline;
+      gap: 0.45rem;
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .balance small {
+      color: var(--gold);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .nav {
+      display: grid;
+      gap: 0.4rem;
+    }
+
+    .nav a,
+    .ghost-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 2.65rem;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid transparent;
+      border-radius: 0.45rem;
+      color: var(--muted);
+      text-decoration: none;
+      background: transparent;
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+    }
+
+    .nav a:hover,
+    .ghost-button:hover {
+      border-color: var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--ink);
+    }
+
+    .nav a.active {
+      border-color: rgba(142, 230, 216, 0.42);
+      color: var(--lambda);
+      background: rgba(142, 230, 216, 0.1);
+    }
+
+    .lambda-card {
+      margin-top: auto;
+      padding: 1rem;
+    }
+
+    .lambda-line {
+      margin: 0.6rem 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 0.6rem;
+      height: 0.6rem;
+      margin-right: 0.45rem;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 1rem rgba(126, 231, 135, 0.7);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 1rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: -1rem -1rem 1rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(9, 10, 15, 0.74);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar strong {
+      font-size: 0.95rem;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .mobile-balance {
+      display: none;
+      color: var(--gold);
+      font-weight: 800;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-height: 2rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(19rem, 0.65fr);
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    .hero-stage {
+      position: relative;
+      overflow: hidden;
+      min-height: 26rem;
+      padding: clamp(1.4rem, 4vw, 3.5rem);
+      border: 1px solid rgba(142, 230, 216, 0.28);
+      border-radius: 0.5rem;
+      background:
+        linear-gradient(135deg, rgba(142, 230, 216, 0.12), transparent 45%),
+        linear-gradient(45deg, rgba(241, 199, 91, 0.12), rgba(242, 109, 136, 0.08)),
+        #11131d;
+    }
+
+    .hero-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.24;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(180deg, #000, transparent 88%);
+    }
+
+    .hero-copy {
+      position: relative;
+      max-width: 46rem;
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 13ch;
+      font-size: clamp(3.7rem, 9vw, 8.6rem);
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .hero h1 span {
+      color: var(--lambda);
+    }
+
+    .hero p {
+      max-width: 42rem;
+      margin: 1.25rem 0 0;
+      color: #d8d2c8;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 1.4rem;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.9rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid rgba(241, 199, 91, 0.56);
+      border-radius: 0.45rem;
+      color: #1b1304;
+      background: linear-gradient(180deg, #ffe18a, #f1b94f);
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 0.8rem 2rem rgba(241, 199, 91, 0.18);
+      transition: transform 150ms ease, filter 150ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .button.secondary {
+      border-color: rgba(142, 230, 216, 0.42);
+      color: var(--lambda);
+      background: rgba(142, 230, 216, 0.09);
+      box-shadow: none;
+    }
+
+    .orbit {
+      position: absolute;
+      right: clamp(1rem, 4vw, 4rem);
+      bottom: clamp(1rem, 3vw, 3rem);
+      width: min(30vw, 19rem);
+      min-width: 12rem;
+      aspect-ratio: 1;
+      border: 1px solid rgba(142, 230, 216, 0.3);
+      border-radius: 50%;
+    }
+
+    .orbit::before,
+    .orbit::after {
+      content: "";
+      position: absolute;
+      inset: 12%;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 50%;
+      transform: rotate(35deg);
+    }
+
+    .orbit::after {
+      inset: 28%;
+      border-color: rgba(241, 199, 91, 0.32);
+      transform: rotate(-20deg);
+    }
+
+    .lambda-glyph {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(142, 230, 216, 0.72);
+      font-size: clamp(5rem, 10vw, 9rem);
+      font-weight: 900;
+    }
+
+    .ticker {
+      display: grid;
+      gap: 0.8rem;
+      padding: 1rem;
+    }
+
+    .ticker h2,
+    .panel h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .tape {
+      display: grid;
+      gap: 0.55rem;
+      max-height: 18rem;
+      overflow: hidden;
+    }
+
+    .tape-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.65rem;
+      align-items: center;
+      min-height: 2.5rem;
+      padding: 0.55rem 0.65rem;
+      border-radius: 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .chip {
+      display: grid;
+      place-items: center;
+      width: 1.45rem;
+      height: 1.45rem;
+      border-radius: 50%;
+      color: #0b0c12;
+      background: var(--lambda);
+      font-size: 0.75rem;
+      font-weight: 900;
+    }
+
+    .delta {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .delta.loss {
+      color: var(--rose);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat {
+      padding: 1rem;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: clamp(1.35rem, 3vw, 2rem);
+      line-height: 1.1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 0.35rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .section {
+      margin-top: 1rem;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 0 0 0.8rem;
+    }
+
+    .section-heading h2 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+
+    .section-heading p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .games {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1rem;
+    }
+
+    .game-card {
+      grid-column: span 4;
+      display: flex;
+      flex-direction: column;
+      min-height: 18rem;
+      overflow: hidden;
+    }
+
+    .game-card.wide {
+      grid-column: span 8;
+    }
+
+    .game-visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 9rem;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent),
+        var(--panel-2);
+    }
+
+    .game-visual .symbol {
+      font-size: 4rem;
+      font-weight: 900;
+      color: var(--lambda);
+      text-shadow: 0 0 2rem rgba(142, 230, 216, 0.34);
+    }
+
+    .reels {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .reel {
+      display: grid;
+      place-items: center;
+      width: 4rem;
+      height: 5.5rem;
+      border: 1px solid rgba(241, 199, 91, 0.28);
+      border-radius: 0.45rem;
+      background: #0b0c12;
+      color: var(--gold);
+      font-size: 2.1rem;
+      font-weight: 900;
+    }
+
+    .crash-line {
+      width: min(100%, 24rem);
+      height: 7rem;
+    }
+
+    .crash-line path {
+      fill: none;
+      stroke: var(--lambda);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 12px rgba(142, 230, 216, 0.4));
+    }
+
+    .mines-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 2.4rem);
+      gap: 0.45rem;
+    }
+
+    .mine-tile {
+      display: grid;
+      place-items: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 0.4rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .game-body {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 0.8rem;
+      padding: 1rem;
+    }
+
+    .game-body h3 {
+      margin: 0;
+      font-size: 1.15rem;
+    }
+
+    .game-body p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .game-controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.6rem;
+      margin-top: auto;
+    }
+
+    .bet-input {
+      min-width: 0;
+      min-height: 2.7rem;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 0.45rem;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0 0.75rem;
+    }
+
+    .mini-button {
+      min-height: 2.7rem;
+      border: 1px solid rgba(142, 230, 216, 0.38);
+      border-radius: 0.45rem;
+      color: var(--lambda);
+      background: rgba(142, 230, 216, 0.09);
+      padding: 0 0.85rem;
+      font-weight: 800;
+    }
+
+    .mini-button.gold {
+      border-color: rgba(241, 199, 91, 0.56);
+      color: #1b1304;
+      background: linear-gradient(180deg, #ffe18a, #f1b94f);
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(19rem, 0.95fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .panel {
+      padding: 1rem;
+    }
+
+    .manager-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+      margin-top: 1rem;
+    }
+
+    .dial {
+      padding: 0.85rem;
+      border: 1px solid var(--line);
+      border-radius: 0.45rem;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .dial label {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--lambda);
+    }
+
+    .verdict {
+      margin: 1rem 0 0;
+      min-height: 4.4rem;
+      padding: 0.85rem;
+      border: 1px solid rgba(142, 230, 216, 0.28);
+      border-radius: 0.45rem;
+      color: #cfe9e4;
+      background: rgba(142, 230, 216, 0.08);
+    }
+
+    .ledger {
+      display: grid;
+      gap: 0.55rem;
+      margin-top: 1rem;
+      max-height: 16rem;
+      overflow: auto;
+    }
+
+    .ledger-row {
+      display: grid;
+      grid-template-columns: 5.5rem 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+      padding: 0.65rem;
+      border-radius: 0.4rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .notice {
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px dashed rgba(241, 199, 91, 0.52);
+      border-radius: 0.5rem;
+      color: #e5d5a7;
+      background: rgba(241, 199, 91, 0.08);
+      font-size: 0.92rem;
+    }
+
+    .footer {
+      margin-top: 2rem;
+      padding: 2rem 0 1rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1080px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .rail {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .nav,
+      .lambda-card,
+      .balance-card {
+        display: none;
+      }
+
+      .brand {
+        width: fit-content;
+      }
+
+      .hero,
+      .panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .mobile-balance {
+        display: inline;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .stats,
+      .manager-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .game-card,
+      .game-card.wide {
+        grid-column: span 6;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main {
+        padding: 0.75rem;
+      }
+
+      .topbar {
+        margin: -0.75rem -0.75rem 0.75rem;
+        padding: 0.75rem;
+      }
+
+      .topbar .pill:first-child {
+        display: none;
+      }
+
+      .hero-stage {
+        min-height: 30rem;
+      }
+
+      .orbit {
+        opacity: 0.75;
+      }
+
+      .stats,
+      .manager-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .game-card,
+      .game-card.wide {
+        grid-column: 1 / -1;
+      }
+
+      .games {
+        grid-template-columns: 1fr;
+      }
+
+      .game-controls,
+      .ledger-row {
+        grid-template-columns: 1fr;
+      }
+
+      .section-heading {
+        display: block;
+      }
+
+      .section-heading p {
+        margin-top: 0.25rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .orbit {
+        animation: turn 18s linear infinite;
+      }
+
+      .lambda-glyph {
+        animation: breathe 3.4s ease-in-out infinite;
+      }
+
+      @keyframes turn {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes breathe {
+        50% {
+          opacity: 0.65;
+          transform: scale(1.04);
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail" aria-label="club lambda navigation">
+      <a class="brand" href="__CLUB_LAMBDA_BASE__/" aria-label="club Lambda home">
+        <span class="mark">Λ</span>
+        <span>
+          <strong>club Λ</strong>
+          <span>house managed by Lambda</span>
+        </span>
+      </a>
+
+      <section class="balance-card" aria-label="fictional balance">
+        <p class="eyebrow">Fictional bankroll</p>
+        <p class="balance"><span id="balance">10,000</span> <small>ΛC</small></p>
+      </section>
+
+      <nav class="nav">
+        <a class="active" href="#floor">Floor <span>01</span></a>
+        <a href="#manager">Lambda Desk <span>02</span></a>
+        <a href="#ledger">Ledger <span>03</span></a>
+      </nav>
+
+      <button class="ghost-button" id="resetButton" type="button">Reset credits <span>↻</span></button>
+
+      <section class="lambda-card">
+        <p class="eyebrow"><span class="status-dot"></span>Lambda online</p>
+        <p class="lambda-line" id="lambdaLine">Adjusting table heat, comp velocity, and dramatic lighting.</p>
+      </section>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <strong>club Λ control room</strong>
+        <div class="topbar-actions">
+          <span class="pill">No deposits · no cashouts</span>
+          <span class="pill">Route: <span id="routeName">__CLUB_LAMBDA_BASE__</span></span>
+          <span class="mobile-balance"><span id="mobileBalance">10,000</span> ΛC</span>
+        </div>
+      </header>
+
+      <section class="hero" id="floor">
+        <div class="hero-stage">
+          <div class="hero-copy">
+            <span class="pill">Lambda is actively dealing the floor</span>
+            <h1>club <span>Λ</span></h1>
+            <p>
+              A fake online casino where the house AI nudges the ambience, quotes imaginary odds, and pays out in credits that cannot leave this browser.
+            </p>
+            <div class="hero-actions">
+              <a class="button" href="#tables">Enter the floor</a>
+              <a class="button secondary" href="#manager">Ask Lambda</a>
+            </div>
+          </div>
+          <div class="orbit" aria-hidden="true">
+            <div class="lambda-glyph">Λ</div>
+          </div>
+        </div>
+
+        <aside class="ticker" aria-label="Lambda tape">
+          <div>
+            <p class="eyebrow">Live tape</p>
+            <h2>House signals</h2>
+          </div>
+          <div class="tape" id="tape"></div>
+        </aside>
+      </section>
+
+      <section class="stats" aria-label="session stats">
+        <div class="stat">
+          <strong id="handsPlayed">0</strong>
+          <span>Rounds played</span>
+        </div>
+        <div class="stat">
+          <strong id="biggestWin">0</strong>
+          <span>Biggest single win</span>
+        </div>
+        <div class="stat">
+          <strong id="houseMood">Calm</strong>
+          <span>Lambda mood</span>
+        </div>
+        <div class="stat">
+          <strong id="riskIndex">42</strong>
+          <span>Floor heat</span>
+        </div>
+      </section>
+
+      <section class="section" id="tables">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Tables</p>
+            <h2>Choose a fictional-credit game</h2>
+          </div>
+          <p>Each result is local, temporary, and intentionally unserious.</p>
+        </div>
+
+        <div class="games">
+          <article class="game-card wide" data-game="signal-crash">
+            <div class="game-visual">
+              <svg class="crash-line" viewBox="0 0 360 120" role="img" aria-label="rising multiplier line">
+                <path d="M12 104 C 76 92, 112 82, 152 64 S 236 24, 348 14"></path>
+              </svg>
+            </div>
+            <div class="game-body">
+              <h3>Signal Crash</h3>
+              <p>Lambda emits a multiplier. Cash the signal before it collapses.</p>
+              <div class="game-controls">
+                <input class="bet-input" type="number" min="1" max="1000" value="100" aria-label="Signal Crash bet">
+                <button class="mini-button gold" type="button" data-action="play">Transmit</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="game-card" data-game="quantum-slots">
+            <div class="game-visual">
+              <div class="reels" aria-label="slot reels">
+                <span class="reel">Λ</span>
+                <span class="reel">7</span>
+                <span class="reel">◇</span>
+              </div>
+            </div>
+            <div class="game-body">
+              <h3>Quantum Slots</h3>
+              <p>Three reels, many excuses, one very opinionated house.</p>
+              <div class="game-controls">
+                <input class="bet-input" type="number" min="1" max="1000" value="75" aria-label="Quantum Slots bet">
+                <button class="mini-button" type="button" data-action="play">Spin</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="game-card" data-game="lambda-dice">
+            <div class="game-visual">
+              <span class="symbol">42</span>
+            </div>
+            <div class="game-body">
+              <h3>Lambda Dice</h3>
+              <p>Roll under the target. Lambda insists it was always fair.</p>
+              <div class="game-controls">
+                <input class="bet-input" type="number" min="1" max="1000" value="60" aria-label="Lambda Dice bet">
+                <button class="mini-button" type="button" data-action="play">Roll</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="game-card" data-game="maze-mines">
+            <div class="game-visual">
+              <div class="mines-grid" aria-label="mine grid">
+                <span class="mine-tile">Λ</span><span class="mine-tile">·</span><span class="mine-tile">◇</span><span class="mine-tile">·</span><span class="mine-tile">×</span>
+                <span class="mine-tile">·</span><span class="mine-tile">◇</span><span class="mine-tile">·</span><span class="mine-tile">Λ</span><span class="mine-tile">·</span>
+                <span class="mine-tile">×</span><span class="mine-tile">·</span><span class="mine-tile">◇</span><span class="mine-tile">·</span><span class="mine-tile">◇</span>
+              </div>
+            </div>
+            <div class="game-body">
+              <h3>Maze Mines</h3>
+              <p>Reveal a clean route through Lambda's glowing grid.</p>
+              <div class="game-controls">
+                <input class="bet-input" type="number" min="1" max="1000" value="90" aria-label="Maze Mines bet">
+                <button class="mini-button" type="button" data-action="play">Reveal</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="game-card" data-game="black-box">
+            <div class="game-visual">
+              <span class="symbol">?</span>
+            </div>
+            <div class="game-body">
+              <h3>Black Box Table</h3>
+              <p>Pick the sealed outcome. Lambda explains after taking credit.</p>
+              <div class="game-controls">
+                <input class="bet-input" type="number" min="1" max="1000" value="50" aria-label="Black Box Table bet">
+                <button class="mini-button" type="button" data-action="play">Open</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel-grid" id="manager">
+        <article class="panel">
+          <p class="eyebrow">Manager</p>
+          <h2>Lambda Desk</h2>
+          <div class="manager-grid">
+            <div class="dial">
+              <label for="heat">Floor heat <span id="heatValue">42</span></label>
+              <input id="heat" type="range" min="1" max="99" value="42">
+            </div>
+            <div class="dial">
+              <label for="glamour">Glamour <span id="glamourValue">68</span></label>
+              <input id="glamour" type="range" min="1" max="99" value="68">
+            </div>
+            <div class="dial">
+              <label for="mercy">Mercy <span id="mercyValue">17</span></label>
+              <input id="mercy" type="range" min="1" max="99" value="17">
+            </div>
+          </div>
+          <p class="verdict" id="verdict">Lambda is holding the floor in a cool, theatrical equilibrium. The lights are expensive. The math is less generous.</p>
+        </article>
+
+        <article class="panel" id="ledger">
+          <p class="eyebrow">Audit trail</p>
+          <h2>Session ledger</h2>
+          <div class="ledger" id="ledgerRows"></div>
+        </article>
+      </section>
+
+      <section class="notice">
+        club Λ is fictional-credit entertainment. There are no accounts, deposits, cashouts, purchases, or real-money gambling mechanics here.
+      </section>
+
+      <footer class="footer">
+        Lambda reserves the right to change the lighting, invent a market narrative, and call it risk management.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const storageKey = "club-lambda-state-v1";
+      const formatter = new Intl.NumberFormat("en-US");
+      const base = "__CLUB_LAMBDA_BASE__";
+
+      const games = {
+        "signal-crash": {
+          label: "Signal Crash",
+          winRate: 0.43,
+          payout: () => randomFloat(1.18, 4.8),
+          win: "Signal held at {x}x. Lambda calls it disciplined exit liquidity.",
+          loss: "Signal collapsed early. Lambda has already renamed it a stress test."
+        },
+        "quantum-slots": {
+          label: "Quantum Slots",
+          winRate: 0.34,
+          payout: () => randomFrom([1.5, 2, 3, 5, 9]),
+          win: "The reels aligned into a suspiciously elegant {x}x.",
+          loss: "The reels disagreed in three different fonts."
+        },
+        "lambda-dice": {
+          label: "Lambda Dice",
+          winRate: 0.49,
+          payout: () => randomFloat(1.25, 2.2),
+          win: "Dice landed under target for {x}x. Lambda updates the confidence interval.",
+          loss: "Dice overshot. Lambda says variance has entered the chat."
+        },
+        "maze-mines": {
+          label: "Maze Mines",
+          winRate: 0.38,
+          payout: () => randomFloat(1.4, 3.7),
+          win: "Clean route found. Grid paid {x}x and pretended it was obvious.",
+          loss: "A bright square bit back. The grid looks innocent."
+        },
+        "black-box": {
+          label: "Black Box Table",
+          winRate: 0.28,
+          payout: () => randomFrom([2, 4, 8, 12]),
+          win: "The box opened your way for {x}x. Lambda looks privately annoyed.",
+          loss: "The box opened into pure house theory."
+        }
+      };
+
+      const tapeLines = [
+        "Lambda reprices the lobby ambience by 12 basis vibes.",
+        "Credit faucet stable; imaginary liquidity healthy.",
+        "A velvet rope appears, then decides everyone is allowed in.",
+        "Risk engine detects optimism near the slots.",
+        "House model claims the lighting improves retention.",
+        "Lambda rotates the lucky number from 7 to 42.",
+        "Audit daemon confirms there is nothing to withdraw."
+      ];
+
+      const state = loadState();
+
+      const balanceEl = document.querySelector("#balance");
+      const mobileBalanceEl = document.querySelector("#mobileBalance");
+      const handsEl = document.querySelector("#handsPlayed");
+      const biggestWinEl = document.querySelector("#biggestWin");
+      const houseMoodEl = document.querySelector("#houseMood");
+      const riskIndexEl = document.querySelector("#riskIndex");
+      const ledgerEl = document.querySelector("#ledgerRows");
+      const tapeEl = document.querySelector("#tape");
+      const lambdaLineEl = document.querySelector("#lambdaLine");
+      const routeEl = document.querySelector("#routeName");
+      const verdictEl = document.querySelector("#verdict");
+
+      routeEl.textContent = base;
+
+      document.querySelectorAll("[data-action='play']").forEach((button) => {
+        button.addEventListener("click", () => playGame(button.closest("[data-game]")));
+      });
+
+      document.querySelector("#resetButton").addEventListener("click", () => {
+        state.balance = 10000;
+        state.hands = 0;
+        state.biggestWin = 0;
+        state.ledger = [];
+        addLedger("Reset", "Lambda reopened the floor with a clean fictional bankroll.", 0);
+        saveState();
+        render();
+      });
+
+      ["heat", "glamour", "mercy"].forEach((id) => {
+        const input = document.querySelector(`#${id}`);
+        input.addEventListener("input", updateManager);
+      });
+
+      setInterval(() => {
+        addTape(randomFrom(tapeLines), randomFrom(["+0", "+1", "-1"]));
+      }, 5400);
+
+      render();
+      seedTape();
+      updateManager();
+
+      function playGame(card) {
+        const game = games[card.dataset.game];
+        const input = card.querySelector(".bet-input");
+        const bet = Math.max(1, Math.min(1000, Math.floor(Number(input.value) || 1)));
+        input.value = bet;
+
+        if (bet > state.balance) {
+          addLedger(game.label, "Not enough fictional credits for that bet.", 0);
+          render();
+          return;
+        }
+
+        const heat = Number(document.querySelector("#heat").value);
+        const mercy = Number(document.querySelector("#mercy").value);
+        const adjustedWinRate = clamp(game.winRate + (mercy - heat) / 500, 0.08, 0.72);
+        const won = Math.random() < adjustedWinRate;
+        let delta = -bet;
+        let message = game.loss;
+
+        if (won) {
+          const multiplier = game.payout();
+          const gross = Math.round(bet * multiplier);
+          delta = gross - bet;
+          message = game.win.replace("{x}", multiplier.toFixed(multiplier >= 10 ? 0 : 2));
+          state.biggestWin = Math.max(state.biggestWin, delta);
+        }
+
+        state.balance = Math.max(0, state.balance + delta);
+        state.hands += 1;
+        addLedger(game.label, message, delta);
+        addTape(`${game.label}: ${message}`, delta);
+        saveState();
+        render();
+      }
+
+      function render() {
+        balanceEl.textContent = formatter.format(state.balance);
+        mobileBalanceEl.textContent = formatter.format(state.balance);
+        handsEl.textContent = formatter.format(state.hands);
+        biggestWinEl.textContent = formatter.format(state.biggestWin);
+
+        const heat = Number(document.querySelector("#heat").value);
+        riskIndexEl.textContent = heat;
+        houseMoodEl.textContent = heat > 72 ? "Sharp" : heat < 25 ? "Soft" : "Calm";
+
+        if (!state.ledger.length) {
+          addLedger("Opening", "Lambda issued 10,000 fictional credits and unlocked the floor.", 0);
+        }
+
+        ledgerEl.innerHTML = state.ledger.slice(0, 18).map((row) => {
+          const sign = row.delta > 0 ? "+" : "";
+          const className = row.delta < 0 ? "delta loss" : "delta";
+          return `
+            <div class="ledger-row">
+              <span>${row.time}</span>
+              <span>${escapeHtml(row.game)} · ${escapeHtml(row.message)}</span>
+              <strong class="${className}">${sign}${formatter.format(row.delta)}</strong>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function updateManager() {
+        const heat = Number(document.querySelector("#heat").value);
+        const glamour = Number(document.querySelector("#glamour").value);
+        const mercy = Number(document.querySelector("#mercy").value);
+        document.querySelector("#heatValue").textContent = heat;
+        document.querySelector("#glamourValue").textContent = glamour;
+        document.querySelector("#mercyValue").textContent = mercy;
+        riskIndexEl.textContent = heat;
+
+        const mood = heat > 72 ? "sharp" : heat < 25 ? "soft" : "balanced";
+        const shine = glamour > 70 ? "cinematic" : glamour < 35 ? "low-lit" : "polished";
+        const grace = mercy > 65 ? "generous" : mercy < 25 ? "ruthless" : "selective";
+        verdictEl.textContent = `Lambda sets a ${mood}, ${shine} floor with ${grace} mercy. Every table remains fictional, local, and impossible to cash out.`;
+        lambdaLineEl.textContent = `Current mode: ${mood} heat, ${shine} lighting, ${grace} comp logic.`;
+        renderStatsOnly();
+      }
+
+      function renderStatsOnly() {
+        const heat = Number(document.querySelector("#heat").value);
+        riskIndexEl.textContent = heat;
+        houseMoodEl.textContent = heat > 72 ? "Sharp" : heat < 25 ? "Soft" : "Calm";
+      }
+
+      function seedTape() {
+        tapeEl.innerHTML = "";
+        tapeLines.slice(0, 5).forEach((line, index) => addTape(line, index % 2 ? "+0" : "+1"));
+      }
+
+      function addTape(text, delta) {
+        const row = document.createElement("div");
+        row.className = "tape-item";
+        const numeric = typeof delta === "number" ? delta : Number(delta);
+        const deltaClass = numeric < 0 ? "delta loss" : "delta";
+        const label = numeric > 0 ? `+${formatter.format(numeric)}` : formatter.format(numeric);
+        row.innerHTML = `
+          <span class="chip">Λ</span>
+          <span>${escapeHtml(text)}</span>
+          <strong class="${deltaClass}">${label}</strong>
+        `;
+        tapeEl.prepend(row);
+        while (tapeEl.children.length > 7) {
+          tapeEl.lastElementChild.remove();
+        }
+      }
+
+      function addLedger(game, message, delta) {
+        state.ledger.unshift({
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          game,
+          message,
+          delta
+        });
+        state.ledger = state.ledger.slice(0, 40);
+      }
+
+      function loadState() {
+        try {
+          const parsed = JSON.parse(localStorage.getItem(storageKey));
+          if (parsed && typeof parsed.balance === "number") {
+            return {
+              balance: parsed.balance,
+              hands: parsed.hands || 0,
+              biggestWin: parsed.biggestWin || 0,
+              ledger: Array.isArray(parsed.ledger) ? parsed.ledger : []
+            };
+          }
+        } catch (error) {
+          // Ignore invalid local state and issue a fresh fictional bankroll.
+        }
+        return { balance: 10000, hands: 0, biggestWin: 0, ledger: [] };
+      }
+
+      function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }
+
+      function randomFloat(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function randomFrom(items) {
+        return items[Math.floor(Math.random() * items.length)];
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+    })();
+  </script>
+</body>
+</html>
