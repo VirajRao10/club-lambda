@@ -3,6 +3,13 @@ import css from "./app-css.txt";
 import app from "./app-client.txt";
 
 const PATH_PREFIXES = ["/gamble", "/clublambda"];
+const FONT_NAMES = new Set([
+  "Exposure-205TF-VAR.woff2",
+  "Exposure-205TF-VAR-Italic.woff2",
+  "OpenRunde-Regular.woff2",
+  "OpenRunde-Medium.woff2",
+  "JetBrainsMono-Variable.woff2"
+]);
 
 export default {
   async fetch(request) {
@@ -13,6 +20,28 @@ export default {
 
     if (!prefix) {
       return new Response("Not found", { status: 404 });
+    }
+
+    if (url.pathname.startsWith(`${prefix}/fonts/`)) {
+      const fontName = decodeURIComponent(url.pathname.split("/").pop() || "");
+      if (!FONT_NAMES.has(fontName)) {
+        return new Response("Not found", { status: 404 });
+      }
+
+      const fontResponse = await fetch(`https://21.community.poke.site/fonts/${fontName}`, {
+        cf: { cacheTtl: 86400, cacheEverything: true }
+      });
+
+      if (!fontResponse.ok) {
+        return new Response("Font unavailable", { status: 502 });
+      }
+
+      return new Response(fontResponse.body, {
+        headers: {
+          "content-type": "font/woff2",
+          "cache-control": "public, max-age=86400"
+        }
+      });
     }
 
     if (url.pathname === `${prefix}/app.css`) {

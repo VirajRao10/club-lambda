@@ -35,6 +35,20 @@
       <button class="balance-pill" type="button" title="Balance">
         <span class="coin">Λ</span><span class="nums js-balance">1,000</span><span class="chev">⌄</span>
       </button>
+      <div class="balance-menu glass" role="menu" aria-label="Balance menu">
+        <p class="menu-copy">Lambda credits stay on this browser. No deposits, no cashouts.</p>
+        <button class="bonus-row js-bonus" type="button">
+          <span>Hourly bonus</span><strong class="js-bonus-value">+200</strong>
+        </button>
+        <p class="bonus-note js-bonus-note"></p>
+        <div class="name-box">
+          <label for="displayName">Display name</label>
+          <div>
+            <input id="displayName" class="name-input js-name" maxlength="18" placeholder="Your name...">
+            <button class="save-name js-save-name" type="button">Save</button>
+          </div>
+        </div>
+      </div>
       <button class="icon-button js-sound" type="button" aria-label="Mute sound" title="Mute">
         <span class="sound-on">♪</span><span class="sound-off">×</span>
       </button>
@@ -57,6 +71,9 @@
   <div class="app">
     <main id="view" class="view"></main>
   </div>
+
+  <div class="radio-host js-radio-host"></div>
+  <div class="toast js-toast"></div>
 
   <script src="__CLUB_LAMBDA_BASE__/app.js" type="module"></script>
 </body>

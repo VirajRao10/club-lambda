@@ -1,5 +1,7 @@
 const BASE = "__CLUB_LAMBDA_BASE__";
 const MONEY_KEY = "club-lambda-clone-state-v1";
+const BONUS_INTERVAL = 60 * 60 * 1000;
+const RADIO_PLAYLIST = "PLpiuAoPPBEf_GfakIh6PK9XwLy7SjmZxl";
 
 const mainGames = [
   ["lobby", "◇", "Lobby"],
@@ -32,7 +34,7 @@ function loadState() {
     const parsed = JSON.parse(localStorage.getItem(MONEY_KEY));
     if (parsed && typeof parsed.balance === "number") return parsed;
   } catch {}
-  return { balance: 1000, biggestWin: 0, played: 0, muted: false, name: "Lambda guest", ledger: [] };
+  return { balance: 1000, biggestWin: 0, played: 0, muted: false, name: "Lambda guest", lastBonus: 0, radioOpen: false, radioEdit: false, playlist: RADIO_PLAYLIST, ledger: [] };
 }
 function saveState() { localStorage.setItem(MONEY_KEY, JSON.stringify(state)); }
 const fmt = (n) => new Intl.NumberFormat("en-US").format(Math.round(n));
@@ -48,8 +50,26 @@ function init() {
   qs(".hamburger").addEventListener("click", () => document.body.classList.toggle("drawer-open"));
   qs(".drawer-backdrop").addEventListener("click", () => document.body.classList.remove("drawer-open"));
   qs(".js-sound").addEventListener("click", () => { state.muted = !state.muted; saveState(); document.body.classList.toggle("muted", state.muted); });
+  qs(".balance-pill").addEventListener("click", (event) => {
+    event.stopPropagation();
+    document.body.classList.toggle("balance-menu-open");
+    renderBalanceMenu();
+  });
+  qs(".js-bonus").addEventListener("click", claimBonus);
+  qs(".js-save-name").addEventListener("click", saveDisplayName);
+  qs(".js-name").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") saveDisplayName();
+  });
+  qs(".sign-in").addEventListener("click", () => toast("Lambda sign-in is decorative for now."));
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".balance-menu") && !event.target.closest(".balance-pill")) {
+      document.body.classList.remove("balance-menu-open");
+    }
+  });
   window.addEventListener("popstate", route);
   document.addEventListener("click", interceptLinks);
+  setInterval(renderBalanceMenu, 1000);
+  renderRadio();
   route();
 }
 
@@ -89,6 +109,105 @@ function renderNav() {
 
 function renderBalance() {
   qsa(".js-balance").forEach((el) => el.textContent = fmt(state.balance));
+  renderBalanceMenu();
+}
+
+function renderBalanceMenu() {
+  const bonus = qs(".js-bonus");
+  if (!bonus) return;
+  const remaining = Math.max(0, BONUS_INTERVAL - (Date.now() - (state.lastBonus || 0)));
+  const ready = remaining === 0;
+  bonus.disabled = !ready;
+  qs(".js-bonus-value").textContent = ready ? "+200" : formatDuration(remaining);
+  qs(".js-bonus-note").textContent = ready ? "Lambda has a fresh bonus ready." : `Next bonus in ${formatDuration(remaining)}.`;
+  const nameInput = qs(".js-name");
+  if (document.activeElement !== nameInput) {
+    nameInput.value = state.name && state.name !== "Lambda guest" ? state.name : "";
+  }
+}
+
+function claimBonus() {
+  const remaining = Math.max(0, BONUS_INTERVAL - (Date.now() - (state.lastBonus || 0)));
+  if (remaining > 0) return;
+  state.lastBonus = Date.now();
+  payout(200, "Hourly bonus");
+  toast("Lambda credited 200 virtual chips.");
+  document.body.classList.remove("balance-menu-open");
+}
+
+function saveDisplayName() {
+  const value = qs(".js-name").value.trim();
+  state.name = value || "Lambda guest";
+  saveState();
+  toast(value ? `Display name saved as ${value}.` : "Display name cleared.");
+}
+
+function formatDuration(ms) {
+  const total = Math.ceil(ms / 1000);
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function toast(message) {
+  const el = qs(".js-toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+function renderRadio() {
+  qs(".js-radio-host").innerHTML = `
+    <div class="radio-panel glass ${state.radioOpen ? "" : "radio-hidden"}">
+      <div class="radio-head">
+        <span class="radio-title"><span>🎵</span> Lambda Radio</span>
+        <span class="radio-tools">
+          <button class="js-radio-edit" type="button" aria-label="Change playlist" title="Change playlist">✎</button>
+          <button class="js-radio-toggle" type="button" aria-label="Minimize player" title="Minimize">▾</button>
+        </span>
+      </div>
+      <div class="radio-form ${state.radioEdit ? "" : "radio-hidden"}">
+        <input class="js-playlist" placeholder="Paste YouTube playlist URL..." value="">
+        <button class="js-playlist-save" type="button">Set</button>
+      </div>
+      <div class="radio-frame">
+        <iframe title="Lambda Radio" src="https://www.youtube.com/embed/videoseries?list=${state.playlist || RADIO_PLAYLIST}&autoplay=1&loop=1" allow="autoplay; encrypted-media"></iframe>
+      </div>
+      <p class="radio-tip">Tip: hit ✎ to paste your own playlist. Audio keeps playing while you play.</p>
+    </div>
+    <button class="radio-button glass js-radio-toggle ${state.radioOpen ? "radio-hidden" : ""}" type="button">🎵 <span>Lambda Radio</span></button>
+  `;
+  qsa(".js-radio-toggle").forEach((button) => button.addEventListener("click", () => {
+    state.radioOpen = !state.radioOpen;
+    saveState();
+    renderRadio();
+  }));
+  const edit = qs(".js-radio-edit");
+  if (edit) edit.addEventListener("click", () => {
+    state.radioEdit = !state.radioEdit;
+    saveState();
+    renderRadio();
+  });
+  const save = qs(".js-playlist-save");
+  if (save) save.addEventListener("click", () => {
+    const next = parsePlaylist(qs(".js-playlist").value);
+    if (next) {
+      state.playlist = next;
+      state.radioEdit = false;
+      saveState();
+      renderRadio();
+    } else {
+      toast("Paste a playlist URL or playlist id.");
+    }
+  });
+}
+
+function parsePlaylist(value) {
+  const trimmed = value.trim();
+  const match = trimmed.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  return /^[a-zA-Z0-9_-]{10,}$/.test(trimmed) ? trimmed : "";
 }
 
 function renderLobby() {
